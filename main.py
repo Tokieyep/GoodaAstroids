@@ -1,11 +1,12 @@
 import pygame
-from constants import SCREEN_HEIGHT, SCREEN_WIDTH
+from constants import SCREEN_HEIGHT, SCREEN_WIDTH, PLAYER_HEALTH, PLAYER_DAMAGE_COOLDOWN_SECONDS
 from logger import log_state,log_event
 from player import Player
 from asteroid import Asteroid
 from asteroidfield import AsteroidField
 import sys
 from shot import Shot
+import time
 
 def main():
     pygame.init()
@@ -37,13 +38,31 @@ def main():
         log_state()
         screen.fill("black")
         updatable.update(dt)
+        
+        if player.damage_cooldown_timer > 0:
 
-        for object in asteroids:
-            if player.collides_with(object):
-                log_event("player_hit")
-                print("Game over!")
-                sys.exit()
-                return True
+            player.damage_cooldown_timer -= dt
+        else:           
+            
+            for object in asteroids:
+                           
+
+                if player.collides_with(object):
+                    log_event("player_hit")
+                    player.health -= 50
+                    player.damage_cooldown_timer = PLAYER_DAMAGE_COOLDOWN_SECONDS
+                    
+                    print(player.health)
+
+                    if player.health <= 0:
+                        player.lives -= 1
+                        print(player.lives)
+                        player.health = PLAYER_HEALTH
+                        print(player.health)
+
+                        if player.lives <= 0:
+                            print("game over!")
+                            sys.exit()
 
         for astroid in asteroids:
             for bullet in shots:
@@ -65,7 +84,6 @@ def main():
                 return
             pass
         dt = clock.tick(60) / 1000
-        print(dt)
     
 
 
